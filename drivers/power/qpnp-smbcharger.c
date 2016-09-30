@@ -53,6 +53,7 @@
 #ifdef CONFIG_CHARGE_LEVEL
 #include "linux/charge_level.h"
 int ac_level = AC_CHARGE_LEVEL_DEFAULT;    // Set AC default charge level
+int cdp_level = CDP_CHARGE_LEVEL_DEFAULT;
 int usb_level  = USB_CHARGE_LEVEL_DEFAULT; // Set USB default charge level
 int charge_info_level_req = 0;	// requested charge current
 int charge_info_level_cur = 0;	// current charge current
@@ -4700,6 +4701,11 @@ static void handle_usb_insertion(struct smbchg_chip *chip)
 	{
 	    charge_level = ac_level;
 	    charger_type = BK_CHARGER_AC;
+	}
+	else if (usb_supply_type == POWER_SUPPLY_TYPE_USB_CDP)
+	{
+	    charge_level = cdp_level;
+	    charger_type = BK_CHARGER_CDP;
 	}
 	else if (usb_supply_type == POWER_SUPPLY_TYPE_USB)
 	{

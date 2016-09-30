@@ -54,6 +54,38 @@ static ssize_t charge_level_ac_store(struct kobject *kobj, struct kobj_attribute
 }
 
 
+static ssize_t charge_level_cdp_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	// print current value
+	return sprintf(buf, "%d mA", cdp_level);
+}
+
+
+static ssize_t charge_level_cdp_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	int val;
+
+	// read value from input buffer
+	ret = sscanf(buf, "%d", &val);
+
+	if (ret != 1)
+		return -EINVAL;
+		
+	// check whether value is within the valid ranges and adjust accordingly
+	if (val > CDP_CHARGE_LEVEL_MAX)
+		val = CDP_CHARGE_LEVEL_MAX;
+
+	if (val < CDP_CHARGE_LEVEL_MIN)
+		val = CDP_CHARGE_LEVEL_MIN;
+
+	// store value
+	cdp_level = val;
+
+	return count;
+}
+
+
 static ssize_t charge_level_usb_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
 	// print current value
@@ -100,6 +132,10 @@ static ssize_t charge_info_show(struct kobject *kobj, struct kobj_attribute *att
 		case BK_CHARGER_AC:
 			sprintf(charge_info_text, "AC charger");
 			break;
+
+		case BK_CHARGER_CDP:
+			sprintf(charge_info_text, "CDP charger");
+			break;
 			
 		case BK_CHARGER_USB:
 			sprintf(charge_info_text, "USB charger");
@@ -126,6 +162,9 @@ static ssize_t charge_info_show(struct kobject *kobj, struct kobj_attribute *att
 static struct kobj_attribute charge_level_ac_attribute =
 __ATTR(charge_level_ac, 0666, charge_level_ac_show, charge_level_ac_store);
 
+static struct kobj_attribute charge_level_cdp_attribute =
+__ATTR(charge_level_cdp, 0666, charge_level_cdp_show, charge_level_cdp_store);
+
 static struct kobj_attribute charge_level_usb_attribute =
 __ATTR(charge_level_usb, 0666, charge_level_usb_show, charge_level_usb_store);
 
@@ -134,6 +173,7 @@ __ATTR(charge_info, 0666, charge_info_show, NULL);
 
 static struct attribute *charge_level_attrs[] = {
 &charge_level_ac_attribute.attr,
+&charge_level_cdp_attribute.attr,
 &charge_level_usb_attribute.attr,
 &charge_info_attribute.attr,
 NULL,
